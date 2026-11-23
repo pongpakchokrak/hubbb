@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ศูนย์รวมผลงานและเว็บแอปพลิเคชัน | Pongpakch</title>
+  <meta name="description" content="ศูนย์รวมระบบและเว็บแอปพลิเคชันสำหรับนักศึกษาเอกการประถมศึกษา">
+
+  <!-- ไอคอนบนแท็บเบราว์เซอร์ (หมวกปริญญา) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%234f46e5'/%3E%3Cpath fill='white' d='M24 9 4 19l20 10 20-10L24 9z'/%3E%3Cpath fill='white' d='M12 25v8c0 2.5 5.4 5 12 5s12-2.5 12-5v-8l-12 6-12-6z'/%3E%3Cpath stroke='white' stroke-width='2' stroke-linecap='round' fill='none' d='M40 20v11'/%3E%3Ccircle cx='40' cy='33' r='2.4' fill='white'/%3E%3C/svg%3E">
+
+  <!-- Google Fonts: Prompt (ภาษาไทย/อังกฤษ) + Noto Sans (จีน/เกาหลี/ญี่ปุ่น) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Prompt', 'Noto Sans SC', 'Noto Sans KR', 'Noto Sans JP', 'sans-serif'] }
+        }
+      }
+    };
+  </script>
+
+  <!-- ตั้งค่าธีมก่อนแสดงผล เพื่อป้องกันการกะพริบ -->
+  <script>
+    (function () {
+      const saved = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (saved === 'dark' || (!saved && prefersDark)) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
+  <style>
+    body { font-family: 'Prompt', 'Noto Sans SC', 'Noto Sans KR', 'Noto Sans JP', sans-serif; }
+    .card-hover { transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease; }
+    .card-hover:hover { transform: translateY(-6px); }
+    .bg-dots {
+      background-image: radial-gradient(rgba(100,116,139,.22) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+    .dark .bg-dots {
+      background-image: radial-gradient(rgba(148,163,184,.12) 1px, transparent 1px);
+    }
+    .toast { transition: opacity .3s ease, transform .3s ease; }
+    .lang-select { appearance: none; -webkit-appearance: none; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-slate-50 text-slate-800 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+
+  <!-- ====================================================================
+       การตั้งค่าภาษา (Languages)
+       - code  : รหัสภาษา
+       - label : ชื่อที่แสดงในตัวเลือก
+       การเพิ่มภาษาใหม่: ดูคำอธิบายท้ายไฟล์ (ส่วน "วิธีเพิ่มภาษาใหม่")
+       ==================================================================== -->
+  <script>
+    const LANGUAGES = [
+      { code: 'th', label: 'ไทย' },
+      { code: 'en', label: 'English' },
+      { code: 'zh', label: '中文' },
+      { code: 'ko', label: '한국어' },
+      { code: 'ja', label: '日本語' }
+    ];
+    const DEFAULT_LANG = 'th';
+
+    /* ----- ข้อความของ UI (ส่วนที่ไม่ใช่ข้อมูลโปรเจกต์) ----- */
+    const UI = {
+      th: {
+        pageTitle: 'ศูนย์รวมผลงานและเว็บแอปพลิเคชัน | Pongpakch',
+        metaDesc: 'ศูนย์รวมระบบและเว็บแอปพลิเคชันสำหรับนักศึกษาเอกการประถมศึกษา',
+        status: 'ระบบพร้อมใช้งาน',
+        heroTitle1: 'ศูนย์รวม',
+        heroTitle2: 'ผลงานและเว็บแอปพลิเคชัน',
+        heroDesc: 'รวมระบบและเครื่องมือที่พัฒนาขึ้นเพื่อช่วยให้การเรียนและการใช้ชีวิตของนักศึกษาเอกการประถมศึกษาเป็นเรื่องง่ายขึ้น เลือกใช้งานได้จากการ์ดด้านล่าง',
+        totalLabel: 'โปรเจกต์ทั้งหมด',
+        itemsLabel: 'รายการ',
+        searchLabel: 'ค้นหาโปรเจกต์',
+        searchPlaceholder: 'ค้นหาชื่อโปรเจกต์หรือคำอธิบาย...',
+        all: 'ทั้งหมด',
+        openSite: 'เปิดเว็บไซต์',
+        copy: 'คัดลอก',
+        copyTitle: 'คัดลอกลิงก์',
+        copied: 'คัดลอกลิงก์แล้ว ✓',
+        resultInfo: 'แสดง {shown} จากทั้งหมด {total} รายการ',
+        emptyTitle: 'ไม่พบโปรเจกต์ที่ค้นหา',
+        emptyDesc: 'ลองเปลี่ยนคำค้นหาหรือหมวดหมู่ดูอีกครั้ง',
+        toggleTheme: 'สลับโหมดสว่าง/มืด',
+        language: 'เลือกภาษา',
+        rights: 'สงวนลิขสิทธิ์',
+        madeWith: 'ออกแบบและพัฒนาด้วยความตั้งใจ'
+      },
+      en: {
+        pageTitle: 'Project Showcase & Web Apps | Pongpakch',
+        metaDesc: 'A showcase of systems and web applications for Primary Education majors.',
+        status: 'All systems operational',
+        heroTitle1: 'Showcase of ',
+        heroTitle2: 'Projects & Web Apps',
+        heroDesc: 'A collection of systems and tools built to make studying and campus life easier for Primary Education majors. Pick any card below to get started.',
+        totalLabel: 'Total projects',
+        itemsLabel: 'items',
+        searchLabel: 'Search projects',
+        searchPlaceholder: 'Search by project name or description...',
+        all: 'All',
+        openSite: 'Open site',
+        copy: 'Copy',
+        copyTitle: 'Copy link',
+        copied: 'Link copied ✓',
+        resultInfo: 'Showing {shown} of {total} items',
+        emptyTitle: 'No matching projects found',
+        emptyDesc: 'Try a different search term or category.',
+        toggleTheme: 'Toggle light/dark mode',
+        language: 'Select language',
+        rights: 'All rights reserved.',
+        madeWith: 'Designed and built with care'
+      },
+      zh: {
+        pageTitle: '作品展示与网页应用 | Pongpakch',
+        metaDesc: '面向小学教育专业学生的系统与网页应用展示',
+        status: '系统运行正常',
+        heroTitle1: '作品',
+        heroTitle2: '展示与网页应用',
+        heroDesc: '汇集为小学教育专业学生开发的系统与工具，让学习和校园生活更轻松。请选择下方卡片开始使用。',
+        totalLabel: '项目总数',
+        itemsLabel: '个',
+        searchLabel: '搜索项目',
+        searchPlaceholder: '按项目名称或描述搜索...',
+        all: '全部',
+        openSite: '打开网站',
+        copy: '复制',
+        copyTitle: '复制链接',
+        copied: '链接已复制 ✓',
+        resultInfo: '显示 {shown} / 共 {total} 个',
+        emptyTitle: '未找到匹配的项目',
+        emptyDesc: '请尝试其他关键词或分类。',
+        toggleTheme: '切换浅色/深色模式',
+        language: '选择语言',
+        rights: '版权所有。',
+        madeWith: '用心设计与开发'
+      },
+      ko: {
+        pageTitle: '프로젝트 쇼케이스 & 웹 앱 | Pongpakch',
+        metaDesc: '초등교육 전공 학생을 위한 시스템 및 웹 애플리케이션 모음',
+        status: '모든 시스템 정상 작동 중',
+        heroTitle1: '프로젝트 모음 ',
+        heroTitle2: '& 웹 애플리케이션',
+        heroDesc: '초등교육 전공 학생의 학업과 캠퍼스 생활을 더 편하게 만들기 위해 개발한 시스템과 도구 모음입니다. 아래 카드에서 바로 사용해 보세요.',
+        totalLabel: '전체 프로젝트',
+        itemsLabel: '개',
+        searchLabel: '프로젝트 검색',
+        searchPlaceholder: '프로젝트 이름 또는 설명으로 검색...',
+        all: '전체',
+        openSite: '사이트 열기',
+        copy: '복사',
+        copyTitle: '링크 복사',
+        copied: '링크가 복사되었습니다 ✓',
+        resultInfo: '전체 {total}개 중 {shown}개 표시',
+        emptyTitle: '검색된 프로젝트가 없습니다',
+        emptyDesc: '다른 검색어나 카테고리를 시도해 보세요.',
+        toggleTheme: '밝은/어두운 모드 전환',
+        language: '언어 선택',
+        rights: '모든 권리 보유.',
+        madeWith: '정성을 담아 설계하고 개발했습니다'
+      },
+      ja: {
+        pageTitle: 'プロジェクト一覧 & Webアプリ | Pongpakch',
+        metaDesc: '小学校教育専攻の学生のためのシステムとWebアプリケーションの紹介',
+        status: 'すべてのシステムが稼働中',
+        heroTitle1: 'プロジェクト一覧',
+        heroTitle2: '& Webアプリケーション',
+        heroDesc: '小学校教育専攻の学生の学習とキャンパスライフをもっと便利にするために開発したシステムとツールをまとめています。下のカードから気軽にご利用ください。',
+        totalLabel: 'プロジェクト総数',
+        itemsLabel: '件',
+        searchLabel: 'プロジェクトを検索',
+        searchPlaceholder: 'プロジェクト名や説明で検索...',
+        all: 'すべて',
+        openSite: 'サイトを開く',
+        copy: 'コピー',
+        copyTitle: 'リンクをコピー',
+        copied: 'リンクをコピーしました ✓',
+        resultInfo: '全{total}件中 {shown}件を表示',
+        emptyTitle: '一致するプロジェクトが見つかりません',
+        emptyDesc: '別のキーワードまたはカテゴリをお試しください。',
+        toggleTheme: 'ライト/ダークモードを切り替え',
+        language: '言語を選択',
+        rights: '無断転載を禁じます。',
+        madeWith: '心を込めて設計・開発しました'
+      }
+    };
+
+    /* ----- หมวดหมู่ (id ใช้ภายใน, ป้ายชื่อแยกตามภาษา) ----- */
+    const CATEGORIES = {
+      timetable:  { th: 'ตารางเรียน/สอบ',      en: 'Timetable & Exams',  zh: '课表/考试',       ko: '시간표/시험',       ja: '時間割・試験' },
+      student:    { th: 'แพลตฟอร์มนักศึกษา',   en: 'Student Platform',   zh: '学生平台',        ko: '학생 플랫폼',      ja: '学生向けプラットフォーム' },
+      calculator: { th: 'เครื่องมือคำนวณ',      en: 'Calculator',         zh: '计算工具',        ko: '계산 도구',        ja: '計算ツール' }
+    };
+  </script>
+
+  <!-- ====================================================================
+       ข้อมูลรายการเว็บไซต์ (แก้ไข / เพิ่ม / ลบ ได้ที่นี่)
+       - id        : รหัสไม่ซ้ำกัน (ภาษาอังกฤษ ไม่มีช่องว่าง)
+       - url       : ลิงก์เว็บไซต์
+       - category  : id หมวดหมู่ (ดูจาก CATEGORIES ด้านบน)
+       - icon      : ไอคอนตรากลาง (ป้ายมุมหมวกปริญญา)
+                     'calendar' | 'sparkles' | 'calculator' | 'link'
+       - color     : สีพื้นหลังหมวกปริญญา (Tailwind gradient)
+       - accent    : สีป้ายมุม (Tailwind text color)
+       - i18n      : ชื่อและคำอธิบายแยกตามภาษา
+       ==================================================================== -->
+  <script>
+    const PROJECTS = [
+      {
+        id: 'rutimetable',
+        url: 'https://rutimetable.pongpakch.com',
+        category: 'timetable',
+        icon: 'calendar',
+        color: 'from-indigo-500 to-blue-600',
+        accent: 'text-indigo-600',
+        i18n: {
+          th: {
+            name: 'RU Timetable',
+            description: 'ระบบดูตารางเรียนและตารางสอบสำหรับนักศึกษาเอกการประถมศึกษา จัดการและตรวจสอบเวลาเรียนได้ในที่เดียว ทุกที่ทุกเวลา'
+          },
+          en: {
+            name: 'RU Timetable',
+            description: 'A timetable and exam schedule system for Primary Education majors. Manage and check your class times in one place, anytime, anywhere.'
+          },
+          zh: {
+            name: 'RU Timetable',
+            description: '为小学教育专业学生设计的课表与考试时间查询系统，随时随地在一处管理和查看上课时间。'
+          },
+          ko: {
+            name: 'RU Timetable',
+            description: '초등교육 전공 학생을 위한 시간표 및 시험 일정 시스템입니다. 언제 어디서나 한곳에서 수업 시간을 관리하고 확인하세요.'
+          },
+          ja: {
+            name: 'RU Timetable',
+            description: '小学校教育専攻の学生のための時間割・試験日程システムです。いつでもどこでも、授業時間をひとつの場所で管理・確認できます。'
+          }
+        }
+      },
+      {
+        id: 'runismart',
+        url: 'https://runismart.pongpakch.com/',
+        category: 'student',
+        icon: 'sparkles',
+        color: 'from-violet-500 to-fuchsia-600',
+        accent: 'text-violet-600',
+        i18n: {
+          th: {
+            name: 'RUniSmart',
+            description: 'แพลตฟอร์มอัจฉริยะสำหรับนักศึกษาเอกการประถมศึกษา รวมเครื่องมือช่วยวางแผนการเรียน จัดการงาน และเพิ่มประสิทธิภาพการใช้ชีวิตนักศึกษา'
+          },
+          en: {
+            name: 'RUniSmart',
+            description: 'A smart platform for Primary Education majors with tools to plan studies, manage tasks, and boost everyday student life.'
+          },
+          zh: {
+            name: 'RUniSmart',
+            description: '面向小学教育专业学生的智能平台，提供学习规划、任务管理等工具，提升日常校园生活效率。'
+          },
+          ko: {
+            name: 'RUniSmart',
+            description: '초등교육 전공 학생을 위한 스마트 플랫폼입니다. 학습 계획 수립, 과제 관리 등 학생 생활의 효율을 높이는 도구를 제공합니다.'
+          },
+          ja: {
+            name: 'RUniSmart',
+            description: '小学校教育専攻の学生向けのスマートプラットフォームです。学習計画やタスク管理などのツールで、毎日の学生生活の効率を高めます。'
+          }
+        }
+      },
+      {
+        id: 'gpa-calculator',
+        url: 'https://pongpakch.com/',
+        category: 'calculator',
+        icon: 'calculator',
+        color: 'from-emerald-500 to-teal-600',
+        accent: 'text-emerald-600',
+        i18n: {
+          th: {
+            name: 'ระบบคำนวณผลการเรียน Bachelor of Education (เอกการประถมศึกษา)',
+            description: 'ระบบคำนวณเกรดเฉลี่ยสำหรับนักศึกษาหลักสูตรครุศาสตรบัณฑิต เอกการประถมศึกษา ช่วยติดตามผลการเรียนและวางแผนเกรดได้ง่ายขึ้น'
+          },
+          en: {
+            name: 'Bachelor of Education (Primary Education) GPA Calculator',
+            description: 'Calculate GPA for the Bachelor of Education program, Primary Education major. Track your results and plan your grades with ease.'
+          },
+          zh: {
+            name: '教育学学士（小学教育专业）绩点计算系统',
+            description: '为教育学学士（小学教育专业）学生计算平均绩点，方便追踪学习成绩并轻松规划成绩目标。'
+          },
+          ko: {
+            name: 'Bachelor of Education (초등교육 전공) 학점 계산기',
+            description: '초등교육 전공 교육학사 과정 학생을 위한 평균 학점(GPA) 계산 시스템입니다. 성적을 확인하고 학점 목표를 쉽게 계획하세요.'
+          },
+          ja: {
+            name: 'Bachelor of Education（小学校教育専攻）成績計算システム',
+            description: '小学校教育専攻の教育学士課程の学生のための GPA 計算システムです。成績を確認し、目標の評定を簡単に計画できます。'
+          }
+        }
+      }
+      // ตัวอย่างการเพิ่มการ์ดใหม่ (คัดลอกไปวางต่อท้ายรายการด้านบน แล้วลบ // ออก):
+      // ,{
+      //   id: 'my-new-app',
+      //   url: 'https://example.com',
+      //   category: 'calculator',
+      //   icon: 'link',
+      //   color: 'from-orange-500 to-rose-600',
+      //   accent: 'text-orange-600',
+      //   i18n: {
+      //     th: { name: 'ชื่อโปรเจกต์ใหม่', description: 'คำอธิบายภาษาไทย' },
+      //     en: { name: 'New Project', description: 'English description' },
+      //     zh: { name: '新项目', description: '中文描述' },
+      //     ko: { name: '새 프로젝트', description: '한국어 설명' },
+      //     ja: { name: '新しいプロジェクト', description: '日本語の説明' }
+      //   }
+      // }
+    ];
+  </script>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 border-b border-slate-200/70 bg-white/70 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70">
+    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+      <a href="#" class="flex items-center gap-2 font-semibold">
+        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md">
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/></svg>
+        </span>
+        <span class="text-base sm:text-lg">Pongpakch <span class="text-indigo-600 dark:text-indigo-400">Hub</span></span>
+      </a>
+
+      <div class="flex items-center gap-2">
+        <!-- ตัวเลือกภาษา -->
+        <label class="relative flex items-center">
+          <span class="sr-only" data-i18n="language">เลือกภาษา</span>
+          <svg class="pointer-events-none absolute left-3 h-4 w-4 text-slate-500 dark:text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+          <select id="langSelect"
+            class="lang-select h-10 cursor-pointer rounded-full border border-slate-200 bg-white py-0 pl-9 pr-8 text-sm font-medium text-slate-700 shadow-sm outline-none transition hover:border-indigo-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"></select>
+          <svg class="pointer-events-none absolute right-3 h-3.5 w-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </label>
+
+        <!-- สลับโหมดสว่าง/มืด -->
+        <button id="themeToggle" type="button" data-i18n-aria="toggleTheme" aria-label="สลับโหมดสว่าง/มืด"
+          class="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:scale-105 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:text-amber-300">
+          <svg id="iconMoon" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg id="iconSun" viewBox="0 0 24 24" class="hidden h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="relative overflow-hidden">
+      <div class="bg-dots absolute inset-0 -z-10 opacity-70"></div>
+      <div class="absolute -top-24 left-1/2 -z-10 h-96 w-96 -translate-x-1/2 rounded-full bg-indigo-400/20 blur-3xl dark:bg-indigo-600/20"></div>
+
+      <div class="mx-auto max-w-7xl px-4 pb-12 pt-16 text-center sm:px-6 sm:pt-20 lg:px-8">
+        <span class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white/80 px-4 py-1.5 text-sm font-medium text-indigo-700 shadow-sm backdrop-blur dark:border-indigo-900 dark:bg-slate-900/80 dark:text-indigo-300">
+          <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
+          <span data-i18n="status">ระบบพร้อมใช้งาน</span>
+        </span>
+
+        <h1 class="mx-auto mt-6 max-w-3xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl">
+          <span data-i18n="heroTitle1">ศูนย์รวม</span><span class="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent dark:from-indigo-400 dark:via-violet-400 dark:to-fuchsia-400" data-i18n="heroTitle2">ผลงานและเว็บแอปพลิเคชัน</span>
+        </h1>
+
+        <p class="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg dark:text-slate-400" data-i18n="heroDesc">
+          รวมระบบและเครื่องมือที่พัฒนาขึ้นเพื่อช่วยให้การเรียนและการใช้ชีวิตของนักศึกษาเอกการประถมศึกษาเป็นเรื่องง่ายขึ้น เลือกใช้งานได้จากการ์ดด้านล่าง
+        </p>
+
+        <div class="mt-8 inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-6 py-3 shadow-lg shadow-indigo-500/5 dark:border-slate-800 dark:bg-slate-900">
+          <span class="text-sm text-slate-500 dark:text-slate-400" data-i18n="totalLabel">โปรเจกต์ทั้งหมด</span>
+          <span id="totalCount" class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">0</span>
+          <span class="text-sm text-slate-500 dark:text-slate-400" data-i18n="itemsLabel">รายการ</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Toolbar: Search + Filter -->
+    <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur sm:p-5 lg:flex-row lg:items-center lg:justify-between dark:border-slate-800 dark:bg-slate-900/80">
+        <label class="relative w-full lg:max-w-sm">
+          <span class="sr-only" data-i18n="searchLabel">ค้นหาโปรเจกต์</span>
+          <svg class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="searchInput" type="search" data-i18n-placeholder="searchPlaceholder" placeholder="ค้นหาชื่อโปรเจกต์หรือคำอธิบาย..."
+            class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-11 pr-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-700 dark:bg-slate-800 dark:focus:bg-slate-900">
+        </label>
+
+        <div id="filterWrap" class="flex flex-wrap gap-2"></div>
+      </div>
+
+      <p id="resultInfo" class="mt-5 text-sm text-slate-500 dark:text-slate-400"></p>
+    </section>
+
+    <!-- Card grid -->
+    <section class="mx-auto max-w-7xl px-4 pb-20 pt-4 sm:px-6 lg:px-8">
+      <div id="grid" class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3"></div>
+
+      <div id="emptyState" class="hidden rounded-2xl border border-dashed border-slate-300 py-16 text-center dark:border-slate-700">
+        <p class="text-lg font-medium text-slate-700 dark:text-slate-300" data-i18n="emptyTitle">ไม่พบโปรเจกต์ที่ค้นหา</p>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400" data-i18n="emptyDesc">ลองเปลี่ยนคำค้นหาหรือหมวดหมู่ดูอีกครั้ง</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-sm text-slate-500 sm:flex-row sm:px-6 lg:px-8 dark:text-slate-400">
+      <p>© <span id="year"></span> Pongpakch. <span data-i18n="rights">สงวนลิขสิทธิ์</span></p>
+      <p data-i18n="madeWith">ออกแบบและพัฒนาด้วยความตั้งใจ</p>
+    </div>
+  </footer>
+
+  <!-- Toast -->
+  <div id="toast" class="toast pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2 translate-y-4 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white opacity-0 shadow-xl dark:bg-white dark:text-slate-900"></div>
+
+  <script>
+    /* ---------- Icons ---------- */
+    // ไอคอนเล็กที่ใช้เป็นป้ายมุมของหมวกปริญญา
+    const iconSvg = (name, cls = 'h-4 w-4') => {
+      const paths = {
+        calendar: '<rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+        sparkles: '<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
+        calculator: '<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8.5 7.5h7"/><path d="M8.5 12.5h.01M12 12.5h.01M15.5 12.5h.01M8.5 16h.01M12 16h.01M15.5 16h.01" stroke-width="2.6"/>',
+        link: '<path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"/><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/>'
+      };
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">${paths[name] || paths.link}</svg>`;
+    };
+
+    // หมวกปริญญา (ตัวหมวกสีขาวบนพื้นสีไล่ระดับของแต่ละการ์ด)
+    const CAP_SVG = `<svg viewBox="0 0 48 48" class="h-9 w-9" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <path d="M24 7 3 17.5 24 28l21-10.5L24 7z"/>
+      <path d="M11 23.5V33c0 2.8 5.8 5.5 13 5.5s13-2.7 13-5.5v-9.5L24 29.5l-13-6z"/>
+      <path d="M40 19v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <circle cx="40" cy="33" r="2.4"/>
+    </svg>`;
+
+    /* ---------- Helpers ---------- */
+    const $ = (sel) => document.querySelector(sel);
+    const esc = (s = '') => String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+    // ดึงข้อความ UI ตามภาษาปัจจุบัน (ถ้าไม่มี จะ fallback เป็นภาษาเริ่มต้น)
+    function t(key, vars = {}) {
+      let s = (UI[currentLang] && UI[currentLang][key]) ?? UI[DEFAULT_LANG][key] ?? key;
+      Object.entries(vars).forEach(([k, v]) => { s = s.replace(`{${k}}`, v); });
+      return s;
+    }
+    // ดึงชื่อหมวดหมู่ตามภาษาปัจจุบัน
+    function catLabel(id) {
+      if (id === 'all') return t('all');
+      const c = CATEGORIES[id] || {};
+      return c[currentLang] || c[DEFAULT_LANG] || id;
+    }
+    // ดึงข้อมูลโปรเจกต์ตามภาษาปัจจุบัน
+    function projText(p) {
+      return (p.i18n && (p.i18n[currentLang] || p.i18n[DEFAULT_LANG])) || { name: p.id, description: '' };
+    }
+
+    let currentLang = DEFAULT_LANG;
+    let activeCategory = 'all';
+    let searchQuery = '';
+
+    /* ---------- Render: Card ---------- */
+    function cardHTML(p) {
+      const txt = projText(p);
+      return `
+        <article class="card-hover group relative flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:border-transparent hover:shadow-2xl hover:shadow-indigo-500/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:shadow-indigo-900/30">
+          <!-- Glow ตกแต่งเมื่อ hover -->
+          <div class="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-gradient-to-br ${esc(p.color)} opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-20"></div>
+
+          <div class="relative flex items-start justify-between gap-3">
+            <!-- หมวกปริญญา + ป้ายไอคอนมุม -->
+            <div class="relative">
+              <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${esc(p.color)} text-white shadow-lg transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-110">
+                ${CAP_SVG}
+              </div>
+              <span class="absolute -bottom-1.5 -right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-md ${esc(p.accent)} dark:bg-slate-800">
+                ${iconSvg(p.icon, 'h-3.5 w-3.5')}
+              </span>
+            </div>
+            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">${esc(catLabel(p.category))}</span>
+          </div>
+
+          <h3 class="relative mt-5 text-lg font-semibold leading-snug text-slate-900 dark:text-white">${esc(txt.name)}</h3>
+          <p class="relative mt-2 flex-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">${esc(txt.description)}</p>
+
+          <div class="relative mt-6 flex items-center gap-2">
+            <a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer"
+              class="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r ${esc(p.color)} px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:shadow-lg hover:brightness-110 active:scale-95">
+              ${esc(t('openSite'))}
+              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>
+            </a>
+            <button type="button" data-copy="${esc(p.url)}" title="${esc(t('copyTitle'))}"
+              class="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-medium text-slate-600 transition hover:border-indigo-400 hover:text-indigo-600 active:scale-95 dark:border-slate-700 dark:text-slate-300 dark:hover:text-indigo-400">
+              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              ${esc(t('copy'))}
+            </button>
+          </div>
+        </article>`;
+    }
+
+    /* ---------- Render: Filters ---------- */
+    function renderFilters() {
+      const ids = ['all', ...new Set(PROJECTS.map(p => p.category))];
+      $('#filterWrap').innerHTML = ids.map(id => {
+        const active = id === activeCategory;
+        const cls = active
+          ? 'border-indigo-600 bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+          : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:text-indigo-400';
+        return `<button type="button" data-cat="${esc(id)}" class="rounded-full border px-4 py-1.5 text-sm font-medium transition ${cls}">${esc(catLabel(id))}</button>`;
+      }).join('');
+    }
+
+    /* ---------- Render: Grid ---------- */
+    function renderGrid() {
+      const q = searchQuery.trim().toLowerCase();
+      const list = PROJECTS.filter(p => {
+        const txt = projText(p);
+        const matchCat = activeCategory === 'all' || p.category === activeCategory;
+        const matchQ = !q || [txt.name, txt.description, catLabel(p.category)]
+          .some(s => String(s).toLowerCase().includes(q));
+        return matchCat && matchQ;
+      });
+
+      $('#grid').innerHTML = list.map(cardHTML).join('');
+      $('#emptyState').classList.toggle('hidden', list.length > 0);
+      $('#resultInfo').textContent = t('resultInfo', { shown: list.length, total: PROJECTS.length });
+    }
+
+    /* ---------- Copy link ---------- */
+    let toastTimer;
+    function showToast(msg) {
+      const el = $('#toast');
+      el.textContent = msg;
+      el.classList.remove('opacity-0', 'translate-y-4');
+      el.classList.add('opacity-100', 'translate-y-0');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.classList.add('opacity-0', 'translate-y-4');
+        el.classList.remove('opacity-100', 'translate-y-0');
+      }, 2000);
+    }
+
+    async function copyLink(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        // Fallback สำหรับเบราว์เซอร์ที่ไม่รองรับ Clipboard API
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+      showToast(t('copied'));
+    }
+
+    /* ---------- Theme ---------- */
+    function applyThemeIcons() {
+      const isDark = document.documentElement.classList.contains('dark');
+      $('#iconMoon').classList.toggle('hidden', isDark);
+      $('#iconSun').classList.toggle('hidden', !isDark);
+    }
+
+    /* ---------- Language ---------- */
+    function buildLangOptions() {
+      $('#langSelect').innerHTML = LANGUAGES
+        .map(l => `<option value="${esc(l.code)}">${esc(l.label)}</option>`).join('');
+    }
+
+    function setLang(code) {
+      if (!LANGUAGES.some(l => l.code === code)) code = DEFAULT_LANG;
+      currentLang = code;
+      localStorage.setItem('lang', code);
+      document.documentElement.lang = code;
+      document.title = t('pageTitle');
+      document.querySelector('meta[name="description"]').setAttribute('content', t('metaDesc'));
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        el.placeholder = t(el.dataset.i18nPlaceholder);
+      });
+      document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+        el.setAttribute('aria-label', t(el.dataset.i18nAria));
+      });
+
+      $('#langSelect').value = code;
+      renderFilters();
+      renderGrid();
+    }
+
+    function detectLang() {
+      const saved = localStorage.getItem('lang');
+      if (saved && LANGUAGES.some(l => l.code === saved)) return saved;
+      const browser = (navigator.language || '').slice(0, 2).toLowerCase();
+      const match = LANGUAGES.find(l => l.code === browser);
+      return match ? match.code : DEFAULT_LANG;
+    }
+
+    /* ---------- Events ---------- */
+    $('#themeToggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      root.classList.toggle('dark');
+      localStorage.setItem('theme', root.classList.contains('dark') ? 'dark' : 'light');
+      applyThemeIcons();
+    });
+
+    $('#langSelect').addEventListener('change', (e) => setLang(e.target.value));
+
+    $('#searchInput').addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderGrid();
+    });
+
+    $('#filterWrap').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-cat]');
+      if (!btn) return;
+      activeCategory = btn.dataset.cat;
+      renderFilters();
+      renderGrid();
+    });
+
+    $('#grid').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-copy]');
+      if (!btn) return;
+      copyLink(btn.dataset.copy);
+    });
+
+    /* ---------- Init ---------- */
+    $('#year').textContent = new Date().getFullYear();
+    $('#totalCount').textContent = PROJECTS.length;
+    applyThemeIcons();
+    buildLangOptions();
+    setLang(detectLang());
+  </script>
+
+  <!--
+  ====================================================================
+  วิธีเพิ่มภาษาใหม่ (ไม่ต้องใช้ฐานข้อมูล ทำได้ 3 ขั้นตอน)
+  ====================================================================
+  1) เพิ่มภาษาในรายการ LANGUAGES
+       { code: 'fr', label: 'Français' }
+
+  2) เพิ่มชุดข้อความ UI ในออบเจกต์ UI (คัดลอกจาก en แล้วแปล)
+       fr: { pageTitle: '...', heroTitle1: '...', ... }
+
+  3) เพิ่มคำแปลในออบเจกต์ CATEGORIES และในช่อง i18n ของแต่ละโปรเจกต์
+       CATEGORIES:  timetable: { ..., fr: '...' }
+       PROJECTS:    i18n: { ..., fr: { name: '...', description: '...' } }
+
+  หมายเหตุ: ถ้าลืมแปลข้อความใดไว้ ระบบจะแสดงเป็นภาษาไทยให้โดยอัตโนมัติ
+  ====================================================================
+  -->
+</body>
+</html>
