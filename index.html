@@ -96,7 +96,10 @@
         toggleTheme: 'สลับโหมดสว่าง/มืด',
         language: 'เลือกภาษา',
         rights: 'สงวนลิขสิทธิ์',
-        madeWith: 'ออกแบบและพัฒนาด้วยความตั้งใจ'
+        madeWith: 'ออกแบบและพัฒนาด้วยความตั้งใจ',
+        privateUse: 'ใช้งานส่วนตัว',
+        contactUnlock: 'ติดต่อเพื่อปลดล็อค',
+        mailSubject: 'ขอปลดล็อคการใช้งาน'
       },
       en: {
         pageTitle: 'Project Showcase & Web Apps | Pongpakch',
@@ -120,7 +123,10 @@
         toggleTheme: 'Toggle light/dark mode',
         language: 'Select language',
         rights: 'All rights reserved.',
-        madeWith: 'Designed and built with care'
+        madeWith: 'Designed and built with care',
+        privateUse: 'Private use',
+        contactUnlock: 'Contact to unlock',
+        mailSubject: 'Request access to'
       },
       zh: {
         pageTitle: '作品展示与网页应用 | Pongpakch',
@@ -144,7 +150,10 @@
         toggleTheme: '切换浅色/深色模式',
         language: '选择语言',
         rights: '版权所有。',
-        madeWith: '用心设计与开发'
+        madeWith: '用心设计与开发',
+        privateUse: '仅限个人使用',
+        contactUnlock: '联系解锁',
+        mailSubject: '申请使用'
       },
       ko: {
         pageTitle: '프로젝트 쇼케이스 & 웹 앱 | Pongpakch',
@@ -168,7 +177,10 @@
         toggleTheme: '밝은/어두운 모드 전환',
         language: '언어 선택',
         rights: '모든 권리 보유.',
-        madeWith: '정성을 담아 설계하고 개발했습니다'
+        madeWith: '정성을 담아 설계하고 개발했습니다',
+        privateUse: '개인 사용 전용',
+        contactUnlock: '문의하여 잠금 해제',
+        mailSubject: '사용 권한 요청'
       },
       ja: {
         pageTitle: 'プロジェクト一覧 & Webアプリ | Pongpakch',
@@ -192,7 +204,10 @@
         toggleTheme: 'ライト/ダークモードを切り替え',
         language: '言語を選択',
         rights: '無断転載を禁じます。',
-        madeWith: '心を込めて設計・開発しました'
+        madeWith: '心を込めて設計・開発しました',
+        privateUse: '個人利用専用',
+        contactUnlock: '問い合わせて解除',
+        mailSubject: '利用許可のリクエスト'
       }
     };
 
@@ -213,6 +228,8 @@
                      'calendar' | 'sparkles' | 'calculator' | 'link'
        - color     : สีพื้นหลังหมวกปริญญา (Tailwind gradient)
        - accent    : สีป้ายมุม (Tailwind text color)
+       - locked    : true = ล็อคการ์ด (ไม่แสดงลิงก์ ให้ติดต่อเพื่อปลดล็อคแทน)
+       - contact   : อีเมลสำหรับติดต่อปลดล็อค (ใช้เมื่อ locked: true)
        - i18n      : ชื่อและคำอธิบายแยกตามภาษา
        ==================================================================== -->
   <script>
@@ -254,6 +271,8 @@
         icon: 'sparkles',
         color: 'from-violet-500 to-fuchsia-600',
         accent: 'text-violet-600',
+        locked: true,
+        contact: '6704001889@rumail.ru.ac.th',
         i18n: {
           th: {
             name: 'RUniSmart',
@@ -315,6 +334,8 @@
       //   icon: 'link',
       //   color: 'from-orange-500 to-rose-600',
       //   accent: 'text-orange-600',
+      //   // locked: true,                      // ใส่ถ้าต้องการล็อคการ์ด
+      //   // contact: 'you@example.com',         // อีเมลสำหรับปลดล็อค
       //   i18n: {
       //     th: { name: 'ชื่อโปรเจกต์ใหม่', description: 'คำอธิบายภาษาไทย' },
       //     en: { name: 'New Project', description: 'English description' },
@@ -424,13 +445,15 @@
 
   <script>
     /* ---------- Icons ---------- */
-    // ไอคอนเล็กที่ใช้เป็นป้ายมุมของหมวกปริญญา
+    // ไอคอนเล็กที่ใช้เป็นป้ายมุมของหมวกปริญญา และปุ่มต่าง ๆ
     const iconSvg = (name, cls = 'h-4 w-4') => {
       const paths = {
         calendar: '<rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
         sparkles: '<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>',
         calculator: '<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8.5 7.5h7"/><path d="M8.5 12.5h.01M12 12.5h.01M15.5 12.5h.01M8.5 16h.01M12 16h.01M15.5 16h.01" stroke-width="2.6"/>',
-        link: '<path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"/><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/>'
+        link: '<path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"/><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/>',
+        lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+        mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'
       };
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">${paths[name] || paths.link}</svg>`;
     };
@@ -473,28 +496,21 @@
     /* ---------- Render: Card ---------- */
     function cardHTML(p) {
       const txt = projText(p);
-      return `
-        <article class="card-hover group relative flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:border-transparent hover:shadow-2xl hover:shadow-indigo-500/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:shadow-indigo-900/30">
-          <!-- Glow ตกแต่งเมื่อ hover -->
-          <div class="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-gradient-to-br ${esc(p.color)} opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-20"></div>
 
-          <div class="relative flex items-start justify-between gap-3">
-            <!-- หมวกปริญญา + ป้ายไอคอนมุม -->
-            <div class="relative">
-              <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${esc(p.color)} text-white shadow-lg transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-110">
-                ${CAP_SVG}
-              </div>
-              <span class="absolute -bottom-1.5 -right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-md ${esc(p.accent)} dark:bg-slate-800">
-                ${iconSvg(p.icon, 'h-3.5 w-3.5')}
-              </span>
-            </div>
-            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">${esc(catLabel(p.category))}</span>
-          </div>
-
-          <h3 class="relative mt-5 text-lg font-semibold leading-snug text-slate-900 dark:text-white">${esc(txt.name)}</h3>
-          <p class="relative mt-2 flex-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">${esc(txt.description)}</p>
-
-          <div class="relative mt-6 flex items-center gap-2">
+      // ปุ่มด้านล่างการ์ด: ถ้าล็อคไว้จะแสดงปุ่มติดต่อแทนลิงก์เว็บไซต์
+      const actions = p.locked
+        ? `<div class="relative mt-6 flex flex-col gap-2">
+            <span class="flex items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+              ${iconSvg('lock', 'h-4 w-4')}
+              ${esc(t('privateUse'))}
+            </span>
+            <a href="mailto:${esc(p.contact)}?subject=${encodeURIComponent(t('mailSubject') + ': ' + txt.name)}"
+              class="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:border-indigo-400 hover:text-indigo-600 active:scale-95 dark:border-slate-700 dark:text-slate-300 dark:hover:text-indigo-400">
+              ${iconSvg('mail', 'h-4 w-4')}
+              ${esc(t('contactUnlock'))}
+            </a>
+          </div>`
+        : `<div class="relative mt-6 flex items-center gap-2">
             <a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer"
               class="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r ${esc(p.color)} px-4 py-2.5 text-sm font-medium text-white shadow-md transition hover:shadow-lg hover:brightness-110 active:scale-95">
               ${esc(t('openSite'))}
@@ -505,7 +521,33 @@
               <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
               ${esc(t('copy'))}
             </button>
+          </div>`;
+
+      return `
+        <article class="card-hover group relative flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:border-transparent hover:shadow-2xl hover:shadow-indigo-500/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:shadow-indigo-900/30">
+          <!-- Glow ตกแต่งเมื่อ hover -->
+          <div class="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-gradient-to-br ${esc(p.color)} opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-20"></div>
+
+          <div class="relative flex items-start justify-between gap-3">
+            <!-- หมวกปริญญา + ป้ายไอคอนมุม -->
+            <div class="relative">
+              <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${esc(p.color)} text-white shadow-lg transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-110 ${p.locked ? 'opacity-75' : ''}">
+                ${CAP_SVG}
+              </div>
+              <span class="absolute -bottom-1.5 -right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-md ${esc(p.accent)} dark:bg-slate-800">
+                ${iconSvg(p.icon, 'h-3.5 w-3.5')}
+              </span>
+            </div>
+            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">${esc(catLabel(p.category))}</span>
           </div>
+
+          <h3 class="relative mt-5 flex items-center gap-2 text-lg font-semibold leading-snug text-slate-900 dark:text-white">
+            ${esc(txt.name)}
+            ${p.locked ? `<span class="text-slate-400" title="${esc(t('privateUse'))}">${iconSvg('lock', 'h-4 w-4')}</span>` : ''}
+          </h3>
+          <p class="relative mt-2 flex-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">${esc(txt.description)}</p>
+
+          ${actions}
         </article>`;
     }
 
